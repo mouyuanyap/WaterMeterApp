@@ -11,22 +11,19 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentTransaction
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
 import androidx.navigation.fragment.navArgs
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.watermeterapp.Api
 import com.example.watermeterapp.ApiPost
 import com.example.watermeterapp.R
 import com.example.watermeterapp.adapter.RecordDBAdapter
 import com.example.watermeterapp.adapter.RecordsAdapter
 import com.example.watermeterapp.data.SubmitFormat
-import com.example.watermeterapp.database.AppDatabase
-import com.example.watermeterapp.database.RecordDB
+import com.google.android.material.snackbar.Snackbar
 import retrofit2.Call
 import retrofit2.Callback
 import retrofit2.Response
@@ -53,11 +50,13 @@ class SecondFragment : Fragment() {
 
         viewModel = ViewModelProvider(this).get(SecondViewModel::class.java)
 
+
+
         view.findViewById<EditText>(R.id.inputRecord).setText("")
 
         viewModel.fetchRecordDB(args.propertyID)
-        viewModel.recordDb.observe(viewLifecycleOwner,{
-            Log.d("startobs",it.toString())
+        viewModel.recordDb.observe(viewLifecycleOwner, {
+            Log.d("startobs", it.toString())
             view.findViewById<RecyclerView>(R.id.recordDbRecycler).apply {
                 layoutManager = LinearLayoutManager(activity)
                 adapter = RecordDBAdapter(it)
@@ -121,43 +120,69 @@ class SecondFragment : Fragment() {
         })
 
         viewModel.network.observe(viewLifecycleOwner, {
-            val context: Context? = getContext()
-            if (it) {
+            if(!it){
+                Snackbar.make(
+                        view.findViewById(R.id.secondFragmentLayout),
+                        "Offline Mode.",
 
-                var apiP = ApiPost.create(context!!)
+                        Snackbar.LENGTH_LONG
+                ).show()
+            }
 
-                val sub = SubmitFormat(args.propertyID, view.findViewById<EditText>(R.id.inputRecord).text.toString().toInt())
 
-                Log.d("amada", view.findViewById<EditText>(R.id.inputRecord).text.toString())
+        })
 
-                apiP.insertRecord(args.propertyID, sub).enqueue(object : Callback<SubmitFormat> {
+        viewModel.fetchNetworkStatus()
 
-                    override fun onResponse(call: Call<SubmitFormat>, response: Response<SubmitFormat>) {
-                        Log.d("yapp", "success")
+        view.findViewById<Button>(R.id.recordSubmitButton).setOnClickListener{
 
-                        viewModel.fetchRecordDetails(args.propertyID)
+            if(view.findViewById<EditText>(R.id.inputRecord).text.toString() != "" && view.findViewById<TextView>(R.id.thisMonthUsage_TextView).text.toString().toInt()>-1) {
+                view.findViewById<Button>(R.id.recordSubmitButton).isEnabled = false
 
-                        viewModel.fetchUsageDetails(args.propertyID)
+                viewModel.fetchNetworkStatus()
+                val context: Context? = getContext()
 
-                        viewModel.fetchUsageAverage(args.propertyID)
+                if (viewModel.network.value!!) {
 
-                        view.findViewById<EditText>(R.id.inputRecord).setText("")
+                    var apiP = ApiPost.create(context!!)
 
+                    val sub = SubmitFormat(args.propertyID, view.findViewById<EditText>(R.id.inputRecord).text.toString().toInt())
+
+                    Log.d("amada", view.findViewById<EditText>(R.id.inputRecord).text.toString())
+
+                    apiP.insertRecord(args.propertyID, sub).enqueue(object : Callback<SubmitFormat> {
+
+                        override fun onResponse(call: Call<SubmitFormat>, response: Response<SubmitFormat>) {
+                            Log.d("yapp", "success")
+
+                            viewModel.fetchRecordDetails(args.propertyID)
+
+                            viewModel.fetchUsageDetails(args.propertyID)
+
+                            viewModel.fetchUsageAverage(args.propertyID)
+
+                            view.findViewById<EditText>(R.id.inputRecord).setText("")
+
+                            view.findViewById<Button>(R.id.recordSubmitButton).isEnabled = true
+                        }
+
+                        override fun onFailure(call: Call<SubmitFormat>, t: Throwable) {
+                            Log.d("yapp", t.message)
+                            view.findViewById<Button>(R.id.recordSubmitButton).isEnabled = true
+
+                        }
+                    })
+                } else {
+
+
+
+                    if (view.findViewById<EditText>(R.id.inputRecord).text.toString() != "") {
+                        viewModel.insertRecordDB(args.propertyID, view.findViewById<EditText>(R.id.inputRecord).text.toString().toInt())
+                        viewModel.fetchRecordDB(args.propertyID)
                         view.findViewById<Button>(R.id.recordSubmitButton).isEnabled = true
                     }
 
-                    override fun onFailure(call: Call<SubmitFormat>, t: Throwable) {
-                        Log.d("yapp", t.message)
-                        view.findViewById<Button>(R.id.recordSubmitButton).isEnabled = true
 
-                    }
-                })
-            }else{
-                if (view.findViewById<EditText>(R.id.inputRecord).text.toString() != ""){
-                    viewModel.insertRecordDB(args.propertyID,view.findViewById<EditText>(R.id.inputRecord).text.toString().toInt())
-                    viewModel.fetchRecordDB(args.propertyID)
-                    view.findViewById<Button>(R.id.recordSubmitButton).isEnabled = true
-                }
 
 /*
                 viewModel.recordDb.observe(viewLifecycleOwner,{
@@ -166,21 +191,8 @@ class SecondFragment : Fragment() {
                         adapter = RecordDBAdapter(it)
                     }
                 })*/
-            }
+                }
 
-
-        })
-
-        view.findViewById<Button>(R.id.testButton).setOnClickListener{
-            viewModel.deleteAllDB()
-        }
-
-        view.findViewById<Button>(R.id.recordSubmitButton).setOnClickListener{
-
-            if(view.findViewById<EditText>(R.id.inputRecord).text.toString() != "" && view.findViewById<TextView>(R.id.thisMonthUsage_TextView).text.toString().toInt()>-1) {
-                view.findViewById<Button>(R.id.recordSubmitButton).isEnabled = false
-
-                viewModel.fetchNetworkStatus()
 
 
             }
@@ -188,9 +200,6 @@ class SecondFragment : Fragment() {
 
         }
 
-        view.findViewById<Button>(R.id.button_second).setOnClickListener {
-            findNavController().navigate(R.id.action_SecondFragment_to_FirstFragment)
-        }
     }
 
 

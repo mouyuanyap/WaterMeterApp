@@ -17,6 +17,15 @@ interface Api {
     @GET("/buildings")
     fun fetchAllBuildings(): Call<BuildingReturn>
 
+    @GET("/buildings/filterBlock/{id}")
+    fun fetchAllBuildingsFilterBlock(@Path("id") block: String): Call<BuildingReturn>
+
+    @GET("/buildings/filterFloor/{id}")
+    fun fetchAllBuildingsFilterFloor(@Path("id") floor: String): Call<BuildingReturn>
+
+    @GET("/buildings/filterAll/{block}/{floor}")
+    fun fetchAllBuildingsFilterAll(@Path("block") block: String, @Path("floor") floor: String): Call<BuildingReturn>
+
     @GET("/buildings/{id}")
     fun fetchSpecificBuildings(@Path("id") id: Int): Call<RecordReturn>
 
@@ -60,9 +69,9 @@ interface Api {
                             request.newBuilder().header("Cache-Control", "public, only-if-cached, max-stale=" + 60 * 60 * 24 * 7).build()
                         chain.proceed(request)
                     }
-                    .connectTimeout(5, TimeUnit.SECONDS)
-                    .readTimeout(5, TimeUnit.SECONDS)
-                    .writeTimeout(5, TimeUnit.SECONDS)
+                    .connectTimeout(1, TimeUnit.SECONDS)
+                    .readTimeout(1, TimeUnit.SECONDS)
+                    .writeTimeout(1, TimeUnit.SECONDS)
                     .build()
 
 

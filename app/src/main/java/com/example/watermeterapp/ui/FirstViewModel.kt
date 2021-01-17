@@ -26,10 +26,162 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class FirstViewModel(app: Application): AndroidViewModel(app) {
     val buildingDetails =  MutableLiveData<List<Buildings>>()
+    val blockQuery = MutableLiveData<String>("")
+    val floorQuery = MutableLiveData<String>("")
+    val isOnline = MutableLiveData<Boolean>()
+
+    val context: Context = getApplication<Application>().applicationContext
+
+
+    fun getBlockQuery(Block:String){
+        Log.d("blockValue", Block)
+        blockQuery.value = Block
+    }
+
+    fun getFloorQuery(Floor:String){
+        Log.d("floorValue", Floor)
+        floorQuery.value = Floor
+    }
+
+    fun hasNetwork(context: Context): Boolean {
+
+        val connectivityManager = context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            val nw      = connectivityManager.activeNetwork ?: return false
+            val actNw = connectivityManager.getNetworkCapabilities(nw) ?: return false
+            return when {
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_WIFI) -> true
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR) -> true
+                //for other device how are able to connect with Ethernet
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET) -> true
+                //for check internet over Bluetooth
+                actNw.hasTransport(NetworkCapabilities.TRANSPORT_BLUETOOTH) -> true
+                else -> false
+            }
+        } else {
+            return connectivityManager.activeNetworkInfo?.isConnected ?: false
+        }
+    }
+
+    fun checkNetwork(){
+        isOnline.value = hasNetwork(context)
+    }
+
+    fun fetchSpecificAllBuildingDetails(Block:String, Floor: String): MutableLiveData<List<Buildings>> {
+
+        checkNetwork()
+
+            val context = getApplication<Application>().applicationContext
+            var api = Api.create(context,true)
+
+            api.fetchAllBuildingsFilterAll(Block,Floor).enqueue(object: Callback<BuildingReturn> {
+                override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
+                    isOnline.value = true
+                    Log.d("filter","good")
+                    buildingDetails.value = response.body()?.Buildings
+                }
+
+                override fun onFailure(call: Call<BuildingReturn>, t: Throwable) {
+                    isOnline.value = false
+                    Log.d("filter",t.message)
+                    api = Api.create(context,false)
+                    api.fetchAllBuildingsFilterAll(Block,Floor).enqueue(object: Callback<BuildingReturn> {
+                        override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
+                            Log.d("ya", response.body().toString())
+                            buildingDetails.value = response.body()?.Buildings
+                        }
+                        override fun onFailure(call: Call<BuildingReturn>, t: Throwable) {
+                            Log.d("yap", t.message)
+                        }
+                    })
+
+                }
+
+            })
+
+
+        return buildingDetails
+    }
+
+    fun fetchSpecificBlockBuildingDetails(Block:String): MutableLiveData<List<Buildings>> {
+
+        checkNetwork()
+
+            val context = getApplication<Application>().applicationContext
+            var api = Api.create(context,true)
+
+            api.fetchAllBuildingsFilterBlock(Block).enqueue(object: Callback<BuildingReturn> {
+                override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
+                    Log.d("filter","good")
+                    buildingDetails.value = response.body()?.Buildings
+                    isOnline.value = true
+                }
+
+                override fun onFailure(call: Call<BuildingReturn>, t: Throwable) {
+                    Log.d("filter",t.message)
+                    isOnline.value = false
+                    api = Api.create(context,false)
+                    api.fetchAllBuildingsFilterBlock(Block).enqueue(object: Callback<BuildingReturn> {
+                        override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
+                            Log.d("ya", response.body().toString())
+                            buildingDetails.value = response.body()?.Buildings
+                        }
+
+                        override fun onFailure(call: Call<BuildingReturn>, t: Throwable) {
+                            Log.d("yap", t.message)
+                        }
+
+                    })
+                }
+
+            })
+
+
+        return buildingDetails
+    }
+
+    fun fetchSpecificFloorBuildingDetails(Floor:String): MutableLiveData<List<Buildings>> {
+
+        checkNetwork()
+            val context = getApplication<Application>().applicationContext
+            var api = Api.create(context,true)
+
+            api.fetchAllBuildingsFilterFloor(Floor).enqueue(object: Callback<BuildingReturn> {
+                override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
+                    Log.d("filter","good")
+                    buildingDetails.value = response.body()?.Buildings
+                    isOnline.value = true
+                }
+
+                override fun onFailure(call: Call<BuildingReturn>, t: Throwable) {
+                    Log.d("filter",t.message)
+                    isOnline.value = false
+                    api = Api.create(context,false)
+                    api.fetchAllBuildingsFilterFloor(Floor).enqueue(object: Callback<BuildingReturn> {
+                        override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
+                            Log.d("ya", response.body().toString())
+                            buildingDetails.value = response.body()?.Buildings
+                        }
+
+                        override fun onFailure(call: Call<BuildingReturn>, t: Throwable) {
+                            Log.d("yap", t.message)
+                        }
+
+                    })
+
+                }
+
+            })
+
+
+        return buildingDetails
+    }
+
 
     fun fetchBuildingDetails(): MutableLiveData<List<Buildings>> {
 
-        viewModelScope.launch(Dispatchers.Default){
+        checkNetwork()
+
             val context = getApplication<Application>().applicationContext
             var api = Api.create(context,true)
 
@@ -37,10 +189,12 @@ class FirstViewModel(app: Application): AndroidViewModel(app) {
                 override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
                     Log.d("ya", response.body().toString())
                     buildingDetails.value = response.body()?.Buildings
+                    isOnline.value = true
 
                 }
                 override fun onFailure(call: Call<BuildingReturn>, t: Throwable) {
                     Log.d("yap", t.message)
+                    isOnline.value = false
                     api = Api.create(context,false)
                     api.fetchAllBuildings().enqueue(object: Callback<BuildingReturn> {
                         override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
@@ -57,7 +211,7 @@ class FirstViewModel(app: Application): AndroidViewModel(app) {
 
             })
 
-        }
+
         return buildingDetails
     }
 }
