@@ -4,6 +4,7 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Build
+import android.provider.SyncStateContract
 import com.example.watermeterapp.data.*
 import okhttp3.Cache
 import okhttp3.OkHttpClient
@@ -14,6 +15,10 @@ import retrofit2.http.*
 import java.util.concurrent.TimeUnit
 
 interface Api {
+
+    @POST("users/authenticate")
+    fun login(@Body request: LoginRequest): Call<LoginResponse>
+
     @GET("/buildings")
     fun fetchAllBuildings(): Call<BuildingReturn>
 
@@ -59,19 +64,29 @@ interface Api {
             val cacheSize = (5 * 1024 * 1024).toLong()
             val myCache = Cache(context.cacheDir, cacheSize)
 
+
+
             val okHttpClient = OkHttpClient.Builder()
                     .cache(myCache)
                     .addInterceptor { chain ->
                         var request = chain.request()
+                        val sessionManager = SessionManager(context)
                         request = if (hasNetwork(context)!! && serverConn)
-                            request.newBuilder().header("Cache-Control", "public, max-age=" + 5).build()
+
+                            request.newBuilder()
+                                    .addHeader("Cache-Control", "public, max-age=" + 5)
+                                    .addHeader("Authorization", "Bearer "+sessionManager.fetchAuthToken())
+                                    .build()
                         else
-                            request.newBuilder().header("Cache-Control", "public, only-if-cached, max-stale=" + 60 * 60 * 24 * 7).build()
+                            request.newBuilder()
+                                    .addHeader("Cache-Control", "public, only-if-cached, max-stale=" + 60 * 60 * 24 * 7)
+                                    //.addHeader("Authorization", "Bearer "+sessionManager.fetchAuthToken())
+                                    .build()
                         chain.proceed(request)
                     }
-                    .connectTimeout(1, TimeUnit.SECONDS)
-                    .readTimeout(1, TimeUnit.SECONDS)
-                    .writeTimeout(1, TimeUnit.SECONDS)
+                    .connectTimeout(2, TimeUnit.SECONDS)
+                    .readTimeout(2, TimeUnit.SECONDS)
+                    .writeTimeout(2, TimeUnit.SECONDS)
                     .build()
 
 
@@ -96,9 +111,17 @@ interface ApiPost{
         fun create(context: Context):ApiPost{
 
             val okHttpClient = OkHttpClient.Builder()
-                    .connectTimeout(5, TimeUnit.SECONDS)
-                    .readTimeout(5, TimeUnit.SECONDS)
-                    .writeTimeout(5, TimeUnit.SECONDS)
+                    .connectTimeout(3, TimeUnit.SECONDS)
+                    .readTimeout(3, TimeUnit.SECONDS)
+                    .writeTimeout(3, TimeUnit.SECONDS)
+                    .addInterceptor { chain ->
+                        var request = chain.request()
+                        val sessionManager = SessionManager(context)
+                        request.newBuilder()
+                                    .addHeader("Authorization", "Bearer "+sessionManager.fetchAuthToken())
+                                    .build()
+                        chain.proceed(request)
+                    }
                     .build()
 
             val retrofit = Retrofit.Builder()
