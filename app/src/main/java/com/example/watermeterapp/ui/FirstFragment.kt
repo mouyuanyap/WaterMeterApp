@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.watermeterapp.R
+import com.example.watermeterapp.SessionManager
 import com.example.watermeterapp.adapter.BuildingsAdapter
 import com.google.android.material.snackbar.Snackbar
 
@@ -23,6 +24,8 @@ class FirstFragment : Fragment() {
 
 
     private lateinit var viewModel: FirstViewModel
+    private lateinit var viewModel2: SecondViewModel
+
 
 
 
@@ -38,13 +41,40 @@ class FirstFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
         Log.d("view","created")
         viewModel = ViewModelProvider(this).get(FirstViewModel::class.java)
+        viewModel2 = ViewModelProvider(this).get(SecondViewModel::class.java)
 
-        viewModel.buildingDetails.observe(viewLifecycleOwner, Observer {
+        viewModel.recordDetails.observe(viewLifecycleOwner, Observer {
             view.findViewById<RecyclerView>(R.id.buildingRecycler).apply{
+
+                Log.d("listBuilding",viewModel.buildingDetails.value.toString())
+
+
                 layoutManager = LinearLayoutManager(activity)
-                adapter = BuildingsAdapter(it)
+                adapter = viewModel.buildingDetails.value?.let { it1 -> BuildingsAdapter(it1,it) }
             }
         })
+
+        viewModel2.recordDetails.observe(viewLifecycleOwner,Observer{
+
+            Log.d("vM2",it[0].toString())
+            viewModel.putRecordDetails(it[0].RecordPropertyID,it[0].RecordTime)
+            Log.d("recordDetails",viewModel.recordDetails.value.toString())
+        })
+
+        viewModel.buildingDetails.observe(viewLifecycleOwner, Observer {
+
+            for (item in it){
+
+                viewModel2.fetchRecordDetails(item.UnitID)
+
+                Log.d("printBuilding", item.UnitID.toString())
+            }
+
+            //recordDetails.clear()
+        })
+
+        val sessionManager = context?.let { SessionManager(it.applicationContext) }
+        Log.d("userID",sessionManager?.fetchUserID().toString())
 
         viewModel.isOnline.observe(viewLifecycleOwner, Observer {
             if (!it){
@@ -110,10 +140,7 @@ class FirstFragment : Fragment() {
             view.findViewById<RadioGroup>(R.id.blockRadioGroup).check(R.id.radioButtonAll)
         }
 */
-
-
-
-
-        
     }
+
+
 }

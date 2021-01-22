@@ -15,6 +15,7 @@ import androidx.navigation.findNavController
 import androidx.recyclerview.widget.RecyclerView
 import com.example.watermeterapp.ApiPost
 import com.example.watermeterapp.R
+import com.example.watermeterapp.SessionManager
 import com.example.watermeterapp.data.Records
 import com.example.watermeterapp.data.SubmitFormat
 import com.example.watermeterapp.database.AppDatabase
@@ -35,6 +36,8 @@ class RecordDBViewHolder (inflater: LayoutInflater, parent: ViewGroup):
     val context: Context = parent.context
     var db = AppDatabase.getAppDataBase(context)
     var recDao = db?.recordDao()
+
+
 
     private var recordTime: TextView? = null
     private var recordReading: TextView?=null
@@ -67,10 +70,11 @@ class RecordDBViewHolder (inflater: LayoutInflater, parent: ViewGroup):
             nav.navigate(action)
         }
 
+        val sessionManager = context?.let { SessionManager(it.applicationContext) }
 
         submitButton?.setOnClickListener{
             val api = ApiPost.create(context)
-            val sub = SubmitFormat(records.RecordPropertyID,records.RecordReading)
+            val sub = SubmitFormat(sessionManager?.fetchUserID()!!,records.RecordPropertyID,records.RecordReading)
             api.insertRecord(records.RecordPropertyID,sub).enqueue(object: Callback<SubmitFormat> {
                 override fun onResponse(call: Call<SubmitFormat>, response: Response<SubmitFormat>) {
                     Log.d("dbSubmit", "success")
@@ -80,18 +84,11 @@ class RecordDBViewHolder (inflater: LayoutInflater, parent: ViewGroup):
 
                     nav.navigate(action)
                 }
-
                 override fun onFailure(call: Call<SubmitFormat>, t: Throwable) {
                     Log.d("dbSubmit",t.message)
                 }
-
             })
-
-
-
         }
-
     }
-
 
 }

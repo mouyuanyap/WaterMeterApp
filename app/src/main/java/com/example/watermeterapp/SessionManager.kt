@@ -11,6 +11,17 @@ class SessionManager (context: Context) {
 
     companion object {
         const val USER_TOKEN = "user_token"
+        const val USER_ID ="user_id"
+    }
+
+    fun saveUserID(id:Int){
+        val editor = prefs.edit()
+        editor.putInt(USER_ID,id)
+        editor.apply()
+    }
+
+    fun fetchUserID():Int?{
+        return prefs.getInt(USER_ID,-1)
     }
 
     /**
@@ -19,6 +30,12 @@ class SessionManager (context: Context) {
     fun saveAuthToken(token: String) {
         val editor = prefs.edit()
         editor.putString(USER_TOKEN, token)
+        editor.apply()
+    }
+
+    fun deleteAuthToken(){
+        val editor = prefs.edit()
+        editor.clear()
         editor.apply()
     }
 

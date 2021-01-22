@@ -15,8 +15,6 @@ import retrofit2.Callback
 import retrofit2.Response
 
 
-const val USER_ID = "com.example.watermeterapp.USERID"
-
 class MainActivity : AppCompatActivity() {
 
 
@@ -29,6 +27,27 @@ class MainActivity : AppCompatActivity() {
 
         val api = Api.create(this,true)
         val sessionManager = SessionManager(this)
+
+
+
+        api.fetchAllBuildings().enqueue(object : Callback<BuildingReturn> {
+            override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
+
+                if(response?.body()?.Buildings != null){
+                    val intent = Intent(this@MainActivity,BuildingUIActivity::class.java).apply{
+
+                    }
+                    startActivity(intent)
+                    finish()
+                }
+
+            }
+
+            override fun onFailure(call: Call<BuildingReturn>, t: Throwable) {
+                Log.d("login","not logged in yet")
+            }
+
+        })
 
 
 
@@ -56,10 +75,10 @@ class MainActivity : AppCompatActivity() {
 
                         if (login_response?.id != null) {
                             sessionManager.saveAuthToken(login_response.token)
+                            sessionManager.saveUserID(login_response.id)
                             var message = login_response.id.toString()
-
                             val intent = Intent(this@MainActivity,BuildingUIActivity::class.java).apply{
-                                putExtra(USER_ID,message)
+
                             }
                             startActivity(intent)
                             finish()

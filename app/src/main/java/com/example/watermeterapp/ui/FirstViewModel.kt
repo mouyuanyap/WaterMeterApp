@@ -30,8 +30,19 @@ class FirstViewModel(app: Application): AndroidViewModel(app) {
     val floorQuery = MutableLiveData<String>("")
     val isOnline = MutableLiveData<Boolean>()
 
+    val recordDetails: MutableLiveData<HashMap<Int,String>> = MutableLiveData(HashMap<Int,String>())
+
     val context: Context = getApplication<Application>().applicationContext
 
+    fun putRecordDetails(id:Int,time:String){
+
+        Log.d("VMput", id.toString() + " " + time)
+        var hash = recordDetails.value
+        hash?.put(id,time)
+        Log.d("VMput", hash.toString())
+        recordDetails.value = hash
+
+    }
 
     fun getBlockQuery(Block:String){
         Log.d("blockValue", Block)

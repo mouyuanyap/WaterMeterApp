@@ -20,6 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.watermeterapp.ApiPost
 import com.example.watermeterapp.R
+import com.example.watermeterapp.SessionManager
 import com.example.watermeterapp.adapter.RecordDBAdapter
 import com.example.watermeterapp.adapter.RecordsAdapter
 import com.example.watermeterapp.data.SubmitFormat
@@ -47,6 +48,8 @@ class SecondFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+
+        val sessionManager = context?.let { SessionManager(it.applicationContext) }
 
         viewModel = ViewModelProvider(this).get(SecondViewModel::class.java)
 
@@ -146,7 +149,7 @@ class SecondFragment : Fragment() {
 
                     var apiP = ApiPost.create(context!!)
 
-                    val sub = SubmitFormat(args.propertyID, view.findViewById<EditText>(R.id.inputRecord).text.toString().toInt())
+                    val sub = SubmitFormat(sessionManager?.fetchUserID()!!,args.propertyID, view.findViewById<EditText>(R.id.inputRecord).text.toString().toInt())
 
                     Log.d("amada", view.findViewById<EditText>(R.id.inputRecord).text.toString())
 
