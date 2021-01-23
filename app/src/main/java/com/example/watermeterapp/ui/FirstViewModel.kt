@@ -26,22 +26,21 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 class FirstViewModel(app: Application): AndroidViewModel(app) {
     val buildingDetails =  MutableLiveData<List<Buildings>>()
-    val blockQuery = MutableLiveData<String>("")
-    val floorQuery = MutableLiveData<String>("")
+    val blockQuery = MutableLiveData<String>()
+    val floorQuery = MutableLiveData<String>()
     val isOnline = MutableLiveData<Boolean>()
 
     val recordDetails: MutableLiveData<HashMap<Int,String>> = MutableLiveData(HashMap<Int,String>())
+    val buildingName: MutableLiveData<HashMap<Int,String>> = MutableLiveData(HashMap<Int,String>())
 
     val context: Context = getApplication<Application>().applicationContext
 
     fun putRecordDetails(id:Int,time:String){
-
         Log.d("VMput", id.toString() + " " + time)
         var hash = recordDetails.value
         hash?.put(id,time)
         Log.d("VMput", hash.toString())
         recordDetails.value = hash
-
     }
 
     fun getBlockQuery(Block:String){
@@ -89,7 +88,15 @@ class FirstViewModel(app: Application): AndroidViewModel(app) {
                 override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
                     isOnline.value = true
                     Log.d("filter","good")
+                    for (item in response.body()?.Buildings!!) {
+                        buildingName.value?.put(
+                            item.UnitID,
+                            item.UnitBlock + "-" + item.UnitName + "-" + item.UnitFloor
+                        )
+                        recordDetails.value?.put(item.UnitID,item.LastRecordTime)
+                    }
                     buildingDetails.value = response.body()?.Buildings
+
                 }
 
                 override fun onFailure(call: Call<BuildingReturn>, t: Throwable) {
@@ -99,7 +106,15 @@ class FirstViewModel(app: Application): AndroidViewModel(app) {
                     api.fetchAllBuildingsFilterAll(Block,Floor).enqueue(object: Callback<BuildingReturn> {
                         override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
                             Log.d("ya", response.body().toString())
+                            for (item in response.body()?.Buildings!!) {
+                                buildingName.value?.put(
+                                    item.UnitID,
+                                    item.UnitBlock + "-" + item.UnitName + "-" + item.UnitFloor
+                                )
+                                recordDetails.value?.put(item.UnitID,item.LastRecordTime)
+                            }
                             buildingDetails.value = response.body()?.Buildings
+
                         }
                         override fun onFailure(call: Call<BuildingReturn>, t: Throwable) {
                             Log.d("yap", t.message)
@@ -124,7 +139,15 @@ class FirstViewModel(app: Application): AndroidViewModel(app) {
             api.fetchAllBuildingsFilterBlock(Block).enqueue(object: Callback<BuildingReturn> {
                 override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
                     Log.d("filter","good")
+                    for (item in response.body()?.Buildings!!) {
+                        buildingName.value?.put(
+                            item.UnitID,
+                            item.UnitBlock + "-" + item.UnitName + "-" + item.UnitFloor
+                        )
+                        recordDetails.value?.put(item.UnitID,item.LastRecordTime)
+                    }
                     buildingDetails.value = response.body()?.Buildings
+
                     isOnline.value = true
                 }
 
@@ -135,7 +158,15 @@ class FirstViewModel(app: Application): AndroidViewModel(app) {
                     api.fetchAllBuildingsFilterBlock(Block).enqueue(object: Callback<BuildingReturn> {
                         override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
                             Log.d("ya", response.body().toString())
+                            for (item in response.body()?.Buildings!!) {
+                                buildingName.value?.put(
+                                    item.UnitID,
+                                    item.UnitBlock + "-" + item.UnitName + "-" + item.UnitFloor
+                                )
+                                recordDetails.value?.put(item.UnitID,item.LastRecordTime)
+                            }
                             buildingDetails.value = response.body()?.Buildings
+
                         }
 
                         override fun onFailure(call: Call<BuildingReturn>, t: Throwable) {
@@ -160,7 +191,15 @@ class FirstViewModel(app: Application): AndroidViewModel(app) {
             api.fetchAllBuildingsFilterFloor(Floor).enqueue(object: Callback<BuildingReturn> {
                 override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
                     Log.d("filter","good")
+                    for (item in response.body()?.Buildings!!) {
+                        buildingName.value?.put(
+                            item.UnitID,
+                            item.UnitBlock + "-" + item.UnitName + "-" + item.UnitFloor
+                        )
+                        recordDetails.value?.put(item.UnitID,item.LastRecordTime)
+                    }
                     buildingDetails.value = response.body()?.Buildings
+
                     isOnline.value = true
                 }
 
@@ -171,7 +210,15 @@ class FirstViewModel(app: Application): AndroidViewModel(app) {
                     api.fetchAllBuildingsFilterFloor(Floor).enqueue(object: Callback<BuildingReturn> {
                         override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
                             Log.d("ya", response.body().toString())
+                            for (item in response.body()?.Buildings!!) {
+                                buildingName.value?.put(
+                                    item.UnitID,
+                                    item.UnitBlock + "-" + item.UnitName + "-" + item.UnitFloor
+                                )
+                                recordDetails.value?.put(item.UnitID,item.LastRecordTime)
+                            }
                             buildingDetails.value = response.body()?.Buildings
+
                         }
 
                         override fun onFailure(call: Call<BuildingReturn>, t: Throwable) {
@@ -188,6 +235,64 @@ class FirstViewModel(app: Application): AndroidViewModel(app) {
         return buildingDetails
     }
 
+    fun fetchbuildingName(){
+        checkNetwork()
+
+        val context = getApplication<Application>().applicationContext
+        var api = Api.create(context, true)
+
+        api.fetchAllBuildings().enqueue(object : Callback<BuildingReturn> {
+            override fun onResponse(
+                call: Call<BuildingReturn>,
+                response: Response<BuildingReturn>
+            ) {
+                Log.d("ya", response.body().toString())
+
+                for (item in response.body()?.Buildings!!) {
+                    buildingName.value?.put(
+                        item.UnitID,
+                        item.UnitBlock + "-" + item.UnitName + "-" + item.UnitFloor
+                    )
+                    recordDetails.value?.put(item.UnitID,item.LastRecordTime)
+                }
+                Log.d("name",buildingName.value.toString())
+                Log.d("date",recordDetails.value.toString())
+                buildingDetails.value = response.body()?.Buildings
+                Log.d("details",buildingDetails.value.toString())
+                isOnline.value = true
+
+            }
+
+            override fun onFailure(call: Call<BuildingReturn>, t: Throwable) {
+                Log.d("yap", t.message)
+                isOnline.value = false
+                api = Api.create(context, false)
+                api.fetchAllBuildings().enqueue(object : Callback<BuildingReturn> {
+                    override fun onResponse(
+                        call: Call<BuildingReturn>,
+                        response: Response<BuildingReturn>
+                    ) {
+                        Log.d("ya", response.body().toString())
+                        for (item in response.body()?.Buildings!!) {
+                            buildingName.value?.put(
+                                item.UnitID,
+                                item.UnitBlock + "-" + item.UnitName + "-" + item.UnitFloor
+                            )
+                            recordDetails.value?.put(item.UnitID,item.LastRecordTime)
+
+                        }
+                        buildingDetails.value = response.body()?.Buildings
+
+                    }
+
+                    override fun onFailure(call: Call<BuildingReturn>, t: Throwable) {
+                        Log.d("yap", t.message)
+                    }
+
+                })
+            }
+        })
+    }
 
     fun fetchBuildingDetails(): MutableLiveData<List<Buildings>> {
 
@@ -199,7 +304,18 @@ class FirstViewModel(app: Application): AndroidViewModel(app) {
             api.fetchAllBuildings().enqueue(object: Callback<BuildingReturn> {
                 override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
                     Log.d("ya", response.body().toString())
+                    for (item in response.body()?.Buildings!!) {
+                        buildingName.value?.put(
+                            item.UnitID,
+                            item.UnitBlock + "-" + item.UnitName + "-" + item.UnitFloor
+                        )
+                        recordDetails.value?.put(item.UnitID,item.LastRecordTime)
+
+                    }
+                    Log.d("name",buildingName.value.toString())
+                    Log.d("date",recordDetails.value.toString())
                     buildingDetails.value = response.body()?.Buildings
+                    Log.d("details",buildingDetails.value.toString())
                     isOnline.value = true
 
                 }
@@ -210,6 +326,13 @@ class FirstViewModel(app: Application): AndroidViewModel(app) {
                     api.fetchAllBuildings().enqueue(object: Callback<BuildingReturn> {
                         override fun onResponse(call: Call<BuildingReturn>, response: Response<BuildingReturn>) {
                             Log.d("ya", response.body().toString())
+                            for (item in response.body()?.Buildings!!) {
+                                buildingName.value?.put(
+                                    item.UnitID,
+                                    item.UnitBlock + "-" + item.UnitName + "-" + item.UnitFloor
+                                )
+                                recordDetails.value?.put(item.UnitID,item.LastRecordTime)
+                            }
                             buildingDetails.value = response.body()?.Buildings
                         }
 

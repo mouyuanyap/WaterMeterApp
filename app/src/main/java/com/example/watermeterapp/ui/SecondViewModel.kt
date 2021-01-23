@@ -84,17 +84,27 @@ class SecondViewModel(app:Application): AndroidViewModel(app) {
         }else{
             network.value = false
         }
-
     }
 
 
-    fun insertRecordDB(propertyID: Int,reading:Int){
-        var temp = RecordDB(0,propertyID,reading)
+    fun insertRecordDB(propertyID: Int,propertyName:String,reading:Int){
+        var temp = RecordDB(0,propertyID,propertyName,reading)
         recDao?.insertRecord(temp)
         Log.d("roomI",recDao?.getAll().toString())
 
     }
 
+
+    fun fetchALLRecordDB():MutableLiveData<List<RecordDB>>{
+        var temp:List<RecordDB>? = null
+        temp = recDao?.getAll()
+        //recordDb.postValue(recDao?.getSpecific(propertyID))
+
+        recordDb.value = temp
+
+        Log.d("roomF",recDao?.getAll().toString())
+        return recordDb
+    }
 
 
     fun fetchRecordDB(propertyID: Int):MutableLiveData<List<RecordDB>>{
@@ -107,6 +117,7 @@ class SecondViewModel(app:Application): AndroidViewModel(app) {
         Log.d("roomF",recDao?.getAll().toString())
         return recordDb
     }
+
 
 
     fun fetchRecordDetails(propertyID: Int):MutableLiveData<List<Records>>{

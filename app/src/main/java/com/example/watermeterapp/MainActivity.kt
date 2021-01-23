@@ -76,6 +76,7 @@ class MainActivity : AppCompatActivity() {
                         if (login_response?.id != null) {
                             sessionManager.saveAuthToken(login_response.token)
                             sessionManager.saveUserID(login_response.id)
+                            sessionManager.saveUserLastName(login_response.lastName)
                             var message = login_response.id.toString()
                             val intent = Intent(this@MainActivity,BuildingUIActivity::class.java).apply{
 

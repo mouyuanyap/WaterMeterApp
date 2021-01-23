@@ -12,6 +12,17 @@ class SessionManager (context: Context) {
     companion object {
         const val USER_TOKEN = "user_token"
         const val USER_ID ="user_id"
+        const val USER_LAST_NAME = "user_last_name"
+    }
+
+    fun saveUserLastName(Lname:String){
+        val editor = prefs.edit()
+        editor.putString(USER_LAST_NAME,Lname)
+        editor.apply()
+    }
+
+    fun fetchUserLastName():String?{
+        return prefs.getString(USER_LAST_NAME,"")
     }
 
     fun saveUserID(id:Int){

@@ -180,7 +180,7 @@ class SecondFragment : Fragment() {
 
 
                     if (view.findViewById<EditText>(R.id.inputRecord).text.toString() != "") {
-                        viewModel.insertRecordDB(args.propertyID, view.findViewById<EditText>(R.id.inputRecord).text.toString().toInt())
+                        viewModel.insertRecordDB(args.propertyID,view.findViewById<TextView>(R.id.record_name_textView).text.toString() ,view.findViewById<EditText>(R.id.inputRecord).text.toString().toInt())
                         viewModel.fetchRecordDB(args.propertyID)
                         view.findViewById<Button>(R.id.recordSubmitButton).isEnabled = true
                     }

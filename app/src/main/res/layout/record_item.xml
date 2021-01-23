@@ -8,7 +8,7 @@
     android:paddingBottom="20dp">
 
     <TextView
-        android:id="@+id/recordTimeTextView"
+        android:id="@+id/recordBuildingIDTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
