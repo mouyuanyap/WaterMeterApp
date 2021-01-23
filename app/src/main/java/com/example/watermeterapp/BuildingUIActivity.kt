@@ -16,11 +16,6 @@ class BuildingUIActivity : AppCompatActivity() {
         setContentView(R.layout.activity_main2)
         setSupportActionBar(findViewById(R.id.toolbar))
 
-
-
-        val api = Api.create(this, true)
-
-
         //snackBar
     }
 

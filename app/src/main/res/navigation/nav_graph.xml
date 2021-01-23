@@ -14,6 +14,15 @@
         <action
             android:id="@+id/action_FirstFragment_to_SecondFragment"
             app:destination="@id/SecondFragment" />
+        <action
+            android:id="@+id/action_FirstFragment_self"
+            app:destination="@id/FirstFragment"
+            app:popUpTo="@+id/FirstFragment"
+            app:popUpToInclusive="true" />
+        <argument
+            android:name="isCheck"
+            app:argType="boolean"
+            android:defaultValue="false" />
     </fragment>
     <fragment
         android:id="@+id/SecondFragment"
@@ -33,25 +42,5 @@
             app:destination="@id/SecondFragment"
             app:popUpTo="@+id/SecondFragment"
             app:popUpToInclusive="true" />
-    </fragment>
-    <fragment
-        android:id="@+id/First2Fragment"
-        android:name="com.example.watermeterapp.First2Fragment"
-        android:label="@string/first_fragment_label"
-        tools:layout="@layout/fragment_first2">
-
-        <action
-            android:id="@+id/action_First2Fragment_to_Second2Fragment"
-            app:destination="@id/Second2Fragment" />
-    </fragment>
-    <fragment
-        android:id="@+id/Second2Fragment"
-        android:name="com.example.watermeterapp.Second2Fragment"
-        android:label="@string/second_fragment_label"
-        tools:layout="@layout/fragment_second2">
-
-        <action
-            android:id="@+id/action_Second2Fragment_to_First2Fragment"
-            app:destination="@id/First2Fragment" />
     </fragment>
 </navigation>

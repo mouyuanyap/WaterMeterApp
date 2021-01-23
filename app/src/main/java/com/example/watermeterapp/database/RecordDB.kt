@@ -8,6 +8,7 @@ import androidx.room.PrimaryKey
 data class RecordDB (
     @PrimaryKey(autoGenerate = true)val RecordID:Int,
     @ColumnInfo val RecordPropertyID:Int,
+    @ColumnInfo val RecordPropertyName:String,
     @ColumnInfo val RecordReading:Int
 
 
